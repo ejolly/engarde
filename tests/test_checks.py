@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
+from random import shuffle
 import numpy as np
 import pandas as pd
 import pandas.util.testing as tm
@@ -180,6 +181,23 @@ def test_unique_index():
     with pytest.raises(AssertionError):
         dc.unique_index()(_add_n)(df.reindex(['a', 'a', 'b']))
 
+def test_reset_index():
+    df = pd.DataFrame([1, 2, 3], index=[0, 1, 2])
+    tm.assert_frame_equal(df, ck.reset_index(df))
+    result = dc.reset_index()(_noop)(df)
+    tm.assert_frame_equal(result, df)
+
+    df = df.iloc[::-1, :]
+    with pytest.raises(AssertionError):
+        ck.reset_index(df)
+        dc.reset_index()(_noop)(df)
+
+    df = pd.DataFrame([1, 2, 3], index=['a', 'b', 'c'])
+    with pytest.raises(AssertionError):
+        ck.reset_index(df)
+        dc.reset_index()(_noop)(df)
+    
+
 def test_within_set():
     df = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
     items = {'A': [1, 2, 3], 'B': ['a', 'b', 'c']}
@@ -320,3 +338,56 @@ def test_is_same_as_with_kwargs():
 
     result = dc.is_same_as(df_equal_float, check_dtype=False)(_noop)(df)
     tm.assert_frame_equal(df, result)
+
+def test_grps_have_same_nunique_val():
+    df = pd.DataFrame(
+        {
+            "val": ["a", "a", "b", "b", "c", "c"],
+            "grp": ["e", "e", "e", "f", "f", "f"],
+        }
+    )
+    
+    result = ck.grps_have_same_nunique_val(df, 'grp', 'val')
+    tm.assert_frame_equal(df, result)
+    result = dc.grps_have_same_nunique_val(grpcols='grp', valcol='val')(_noop)(df)
+    tm.assert_frame_equal(df, result)
+
+    df = pd.DataFrame(
+        {
+            "val": ["a", "a", "b", "b", "c", "d"],
+            "grp": ["e", "e", "e", "f", "f", "f"],
+        }
+    )
+    with pytest.raises(AssertionError):
+        ck.grps_have_same_nunique_val(df, 'grp', 'val')
+        dc.grps_have_same_nunique_val(grpcols='grp', valcol='val')(_noop)(df)
+        
+def test_grps_have_same_nobs():
+    df = pd.DataFrame(
+        {
+            "grp": ["a", "a", "b", "b", "c", "c"],
+            "val": list(range(6)),
+        }
+    )
+    result = ck.grps_have_same_nobs(df, 'grp')
+    tm.assert_frame_equal(df, result)
+    result = ck.grps_have_same_nobs(df, 'grp', 2)
+    tm.assert_frame_equal(df, result)
+    
+    result = dc.grps_have_same_nobs(grpcols='grp')(_noop)(df)
+    tm.assert_frame_equal(df, result)
+    result = dc.grps_have_same_nobs(grpcols='grp', nobs=2)(_noop)(df)
+    tm.assert_frame_equal(df, result)
+
+    df = pd.DataFrame(
+        {
+            "grp": ["a", "a", "b", "b", "c", "c", "c"],
+            "val": list(range(7)),
+        }
+    )
+
+    with pytest.raises(AssertionError):
+        ck.grps_have_same_nobs(df, 'grp')
+        ck.grps_have_same_nobs(df, 'grp', 2)
+        dc.grps_have_same_nobs(grpcols='grp')(_noop)(df)
+        dc.grps_have_same_nobs(grpcols='grp', nobs=2)(_noop)(df)

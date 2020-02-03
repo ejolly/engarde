@@ -186,9 +186,38 @@ def is_same_as(df_to_compare, **assert_kwargs):
         return wrapper
     return decorate
 
+def reset_index():
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            ck.reset_index(result)
+            return result
+        return wrapper
+    return decorate
+
+def grps_have_same_nunique_val(grpcols, valcol):
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            ck.grps_have_same_nunique_val(result, grpcols, valcol)
+            return result
+        return wrapper
+    return decorate
+    
+def grps_have_same_nobs(grpcols, nobs=None):
+    def decorate(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            ck.grps_have_same_nobs(result, grpcols, nobs=nobs)
+            return result
+        return wrapper
+    return decorate
 
 __all__ = ['is_monotonic', 'is_same_as', 'is_shape', 'none_missing',
            'unique_index', 'within_range', 'within_set', 'has_dtypes',
            'verify', 'verify_all', 'verify_any', 'within_n_std',
-           'one_to_many','is_same_as',]
+           'one_to_many', 'is_same_as', 'reset_index', 'grps_have_same_nunique_val', 'grps_have_same_nobs']
 

@@ -294,8 +294,81 @@ def is_same_as(df, df_to_compare, **kwargs):
         six.raise_from(AssertionError("DataFrames are not equal"), exc)
     return df
 
+def reset_index(df):
+    """
+    Assert that the dataframe has a numberic index ordered from (0 - number of row - 1). Useful when a labeled index isn't being used, but ordering should be monotonic for future operations on the dataframe.
+
+    Parameters
+    ==========
+    df : pandas DataFrame
+
+    Returns
+    ==========
+    df : pandas DataFrame
+
+    """
+
+    try:
+        assert all(df.index == range(df.shape[0]))
+    except AssertionError as e:
+        e.args = df.index
+        raise
+    return df
+
+def grps_have_same_nunique_val(df, grpcols, valcol):
+    """
+    Assert that all groups have the same number of unique vals in valcol.
+
+    Parameters
+    ==========
+    df : pandas DataFrame
+    grpcols : str/list
+        The column(s) to group on.
+    valcol : str
+        The column containing obs
+
+    Returns
+    ==========
+    df : pandas DataFrame
+
+    """
+
+    nunique = df.groupby(grpcols)[valcol].nunique()
+    if not nunique.sum() % nunique.shape[0] == 0:
+        raise AssertionError(f"Groups dont have the same number of unique vals in {valcol}", nunique)
+    return df
+
+def grps_have_same_nobs(df, grpcols, nobs=None):
+    """
+    Assert that all groups have the same number of rows; optionally check that number is nobs.
+
+    Parameters
+    ==========
+    df : pandas DataFrame
+    grpcols : str/list
+        The column(s) to group on.
+    nobs : int
+        Expected number of rows per group (optional)
+
+    Returns
+    ==========
+    df : pandas DataFrame
+
+    """
+
+    grouped = df.groupby(grpcols).size()
+    if nobs:
+        if not all(grouped == nobs):
+            raise AssertionError(f"Groups dont all have {nobs} rows", grouped)
+    else:
+        if not grouped.sum() % grouped.shape[0] == 0:
+            raise AssertionError(f"Groups dont have the same number of rows", grouped)
+
+    return df
+
+
 
 __all__ = ['is_monotonic', 'is_same_as', 'is_shape', 'none_missing',
            'unique_index', 'within_n_std', 'within_range', 'within_set',
            'has_dtypes', 'verify', 'verify_all', 'verify_any',
-           'one_to_many','is_same_as',]
+           'one_to_many', 'is_same_as', 'reset_index', 'grps_have_same_nunique_val', 'grps_have_same_nobs']

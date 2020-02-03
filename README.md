@@ -1,20 +1,24 @@
-__Engarde is no longer under active developement. Take a look at the [bulwark](https://github.com/zaxr/bulwark) tool for similar functionality.__
-
-
 Engarde
 =======
 
-[![Build Status](https://travis-ci.org/TomAugspurger/engarde.svg)](https://travis-ci.org/TomAugspurger/engarde)
+[![Build Status](https://travis-ci.org/ejolly/engarde.svg)](https://travis-ci.org/ejolly/engarde)  
 
 A python package for defensive data analysis.
-Documentation is at [readthedocs](http://engarde.readthedocs.org/en/latest/).
+Documentation is at [readthedocs](http://engarde.readthedocs.org/en/latest/).  
+
+This is a fork of Tom Augspurger's [original engarde library](https://github.com/engarde-dev/engarde), which is **no longer maintained** and has been ported to [bulwark](https://github.com/zaxr/bulwark). I prefer working from this project because the code base is lighter, simpler, and custom checks/decorators return _booleans_ as oppose to _assertion statements_. Asserts are preferred because they are more extensible and pythonic, but if your intend to keep your checks small then returning booleans almost always results in writing less code.
+
+- [Dependencies](#dependencies)
+- [Why](#why)
+- [Examples](#examples)
+- [New Additions](#new-additions)
 
 Dependencies
 ============
 
 - pandas
 
-Supports python 2.7+ and 3.4+
+Supports python ~~2.7+~~ and 3.4+
 
 Why?
 ====
@@ -67,8 +71,14 @@ introduced in pandas 0.16.2 (June 2015).
 ... )
 ```
 
-See Also
-========
+New Additions
+=============
 
-- [assertr](https://github.com/tonyfischetti/assertr)
-- [Validada](https://github.com/jnmclarty/validada)
+Like the core library, these additions can be imported and used as either functions or decorators.  
+
+- `reset_index`
+    - Check if a dataframe has a numeric index equal to 0 - nrows-1
+- `grps_have_same_nunique_val(grpcol, valcol)`
+    - Check if `df.groupby(grpcol)[valcol.nunique()` is the same for each group
+- `grps_have_same_nobs(grpcol, nobs=None)`
+    - Check if `df.groupby(grpcol).size()` is the same for each group and optional that all groups have `nobs`
